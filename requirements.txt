@@ -1,0 +1,27 @@
+asgiref==3.9.1
+certifi==2025.7.14
+cffi==1.17.1
+charset-normalizer==3.4.2
+cryptography==45.0.5
+dj-database-url==3.0.1
+Django==5.2.4
+django-allauth==65.10.0
+django-cors-headers==4.7.0
+django-filter==25.1
+djangorestframework==3.16.0
+djangorestframework_simplejwt==5.5.0
+idna==3.10
+pillow==11.3.0
+psycopg2-binary==2.9.10
+pycparser==2.22
+PyJWT==2.9.0
+python-decouple==3.8
+requests==2.32.4
+sqlparse==0.5.3
+urllib3==2.5.0
+
+# Kafka and Email Services
+kafka-python==2.0.2
+celery==5.4.0
+redis==5.2.1
+django-environ==0.11.2

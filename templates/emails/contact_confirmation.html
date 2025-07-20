@@ -1,0 +1,62 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Thank You for Contacting Us - YouTubers Modern{% endblock %}
+
+{% block content %}
+<h2>Thank You for Reaching Out! 🎉</h2>
+
+<p>Hi <strong>{{ first_name }}</strong>,</p>
+
+<p>We've received your message and wanted to let you know right away. Thank you for taking the time to contact YouTubers
+    Modern!</p>
+
+<div class="highlight-box">
+    <h3>📝 Your Message Details</h3>
+    <p><strong>Subject:</strong> {{ subject }}</p>
+    <p><strong>Email:</strong> {{ email }}</p>
+    {% if phone %}
+    <p><strong>Phone:</strong> {{ phone }}</p>
+    {% endif %}
+    {% if city %}
+    <p><strong>Location:</strong> {{ city }}{% if state %}, {{ state }}{% endif %}</p>
+    {% endif %}
+    <p><strong>Date Submitted:</strong> {{ created_date|date:"F d, Y g:i A" }}</p>
+</div>
+
+<p><strong>Your Message:</strong></p>
+<div
+    style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+    <p style="margin: 0; font-style: italic; color: #475569;">"{{ message }}"</p>
+</div>
+
+<h3>What Happens Next? ⭐</h3>
+<p>Our team is already reviewing your message, and here's what you can expect:</p>
+<ul style="line-height: 1.8; color: #475569;">
+    <li>🕐 <strong>Response Time:</strong> We typically respond within 24-48 hours</li>
+    <li>📧 <strong>Direct Reply:</strong> You'll hear back from us at <strong>{{ email }}</strong></li>
+    <li>🎯 <strong>Personalized Attention:</strong> Each inquiry gets individual attention from our team</li>
+    <li>💫 <strong>Follow-up:</strong> If needed, we'll schedule a call or meeting</li>
+</ul>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="http://localhost:3002/" class="button">
+        🌐 Visit Our Website
+    </a>
+</div>
+
+<h3>Need Immediate Assistance? 🚀</h3>
+<p>If your inquiry is urgent, you can also reach us through:</p>
+<ul style="line-height: 1.8; color: #475569;">
+    <li>📞 Phone: <a href="tel:+1234567890" style="color: #ea580c; text-decoration: none;">+1 (234) 567-8900</a></li>
+    <li>💬 Live Chat: Available on our website</li>
+    <li>📱 Social Media: Follow us for updates and quick responses</li>
+</ul>
+
+<p>We're excited to connect with you and explore how YouTubers Modern can help with your needs!</p>
+
+<p style="margin-top: 30px;">
+    Best regards,<br>
+    <strong>The YouTubers Modern Team</strong><br>
+    <span style="color: #64748b;">Building bridges between creators and audiences</span>
+</p>
+{% endblock %}

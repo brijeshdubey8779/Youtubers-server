@@ -1,0 +1,80 @@
+{% extends "emails/base_email.html" %}
+
+{% block title %}Your YouTuber Inquiry Received - YouTubers Modern{% endblock %}
+
+{% block content %}
+<h2>Thanks for Your Interest! 🎬</h2>
+
+<p>Hi <strong>{{ first_name }}</strong>,</p>
+
+<p>We've received your inquiry about <strong>{{ youtuber_name }}</strong> and wanted to confirm that we're on it! Thank
+    you for choosing YouTubers Modern for your content creation needs.</p>
+
+<div class="highlight-box">
+    <h3>🎥 Your Inquiry Details</h3>
+    <p><strong>YouTuber:</strong> {{ youtuber_name }}</p>
+    <p><strong>Category:</strong> {{ youtuber_category|title }}</p>
+    <p><strong>Your Email:</strong> {{ email }}</p>
+    {% if phone %}
+    <p><strong>Phone:</strong> {{ phone }}</p>
+    {% endif %}
+    <p><strong>Inquiry Date:</strong> {{ created_date|date:"F d, Y g:i A" }}</p>
+</div>
+
+{% if message %}
+<p><strong>Your Message:</strong></p>
+<div
+    style="background-color: #f1f5f9; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 20px 0;">
+    <p style="margin: 0; font-style: italic; color: #475569;">"{{ message }}"</p>
+</div>
+{% endif %}
+
+<h3>What's Next? 🚀</h3>
+<p>Here's how we'll help you connect with <strong>{{ youtuber_name }}</strong>:</p>
+<ul style="line-height: 1.8; color: #475569;">
+    <li>🔍 <strong>Verification:</strong> We'll verify your requirements and budget expectations</li>
+    <li>📞 <strong>Creator Contact:</strong> We'll reach out to {{ youtuber_name }} on your behalf</li>
+    <li>💬 <strong>Coordination:</strong> We'll facilitate the initial conversation</li>
+    <li>📊 <strong>Project Details:</strong> Help finalize collaboration terms and timeline</li>
+    <li>✅ <strong>Support:</strong> Ongoing support throughout the collaboration</li>
+</ul>
+
+<div
+    style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
+    <h3 style="color: #1e40af; margin: 0 0 10px 0; font-size: 18px;">💡 Pro Tip</h3>
+    <p style="color: #1e3a8a; margin: 0;">While we coordinate with {{ youtuber_name }}, feel free to browse other
+        creators in the <strong>{{ youtuber_category|title }}</strong> category who might also be a great fit for your
+        project!</p>
+</div>
+
+<div style="text-align: center; margin: 30px 0;">
+    <a href="http://localhost:3002/youtubers/{{ youtuber_id }}" class="button">
+        👀 View {{ youtuber_name }}'s Profile
+    </a>
+</div>
+
+<h3>Response Timeline ⏰</h3>
+<p>Here's what you can expect:</p>
+<ul style="line-height: 1.8; color: #475569;">
+    <li>📧 <strong>Initial Response:</strong> Within 4-6 hours during business hours</li>
+    <li>🎯 <strong>Creator Outreach:</strong> Within 24 hours</li>
+    <li>💬 <strong>First Connection:</strong> Typically within 2-3 business days</li>
+    <li>📞 <strong>Follow-up:</strong> We'll keep you updated every step of the way</li>
+</ul>
+
+<h3>Need to Add More Details? 📝</h3>
+<p>If you forgot to mention something important or want to add more context to your request, feel free to:</p>
+<ul style="line-height: 1.8; color: #475569;">
+    <li>📞 Call us: <a href="tel:+1234567890" style="color: #ea580c; text-decoration: none;">+1 (234) 567-8900</a></li>
+    <li>📧 Reply to this email with additional information</li>
+    <li>💬 Use our website chat for quick questions</li>
+</ul>
+
+<p>We're excited to help you create amazing content with <strong>{{ youtuber_name }}</strong>!</p>
+
+<p style="margin-top: 30px;">
+    Best regards,<br>
+    <strong>The YouTubers Modern Team</strong><br>
+    <span style="color: #64748b;">Connecting creators with opportunities</span>
+</p>
+{% endblock %}

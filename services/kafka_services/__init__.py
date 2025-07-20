@@ -1,0 +1,1 @@
+# Kafka services for email notifications 

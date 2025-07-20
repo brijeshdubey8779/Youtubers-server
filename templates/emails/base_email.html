@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}YouTubers Modern{% endblock %}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .header p {
+            color: #fed7aa;
+            margin: 8px 0 0 0;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .content h2 {
+            color: #1e293b;
+            font-size: 24px;
+            margin: 0 0 20px 0;
+        }
+
+        .content p {
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+            font-size: 16px;
+        }
+
+        .highlight-box {
+            background-color: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .highlight-box h3 {
+            color: #92400e;
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .highlight-box p {
+            color: #78350f;
+            margin: 0;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 16px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            background-color: #1e293b;
+            color: #94a3b8;
+            padding: 30px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .footer a {
+            color: #f97316;
+            text-decoration: none;
+        }
+
+        .social-links {
+            margin: 20px 0;
+        }
+
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #f97316;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        @media only screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+            }
+
+            .header,
+            .content,
+            .footer {
+                padding: 20px !important;
+            }
+
+            .header h1 {
+                font-size: 24px !important;
+            }
+
+            .content h2 {
+                font-size: 20px !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>YouTubers Modern</h1>
+            <p>Your Gateway to Amazing Content Creators</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            {% block content %}
+            <!-- Email content goes here -->
+            {% endblock %}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="social-links">
+                <a href="#" style="margin-right: 15px;">🌐 Website</a>
+                <a href="#" style="margin-right: 15px;">📧 Contact</a>
+                <a href="#" style="margin-right: 15px;">📱 Support</a>
+            </div>
+            <p>
+                &copy; 2025 YouTubers Modern. All rights reserved.<br>
+                This email was sent because you contacted us through our website.<br>
+                <a href="#">Unsubscribe</a> | <a href="#">Privacy Policy</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

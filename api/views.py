@@ -1,9 +1,10 @@
+from django.shortcuts import render
 from rest_framework import generics, status, filters
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.auth import authenticate
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate, login as auth_login, logout
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,11 +14,14 @@ import logging
 from .serializers import (
     UserSerializer, UserRegistrationSerializer, YoutubersSerializer, 
     YoutubersListSerializer, TeamSerializer, SliderSerializer, 
-    ContactSerializer, ContactinfoSerializer, ContactpageSerializer,
-    YouTuberInquirySerializer
+    ContactinfoSerializer, ContactpageSerializer,
+    YouTuberInquirySerializer,
+    # Creator Authentication Serializers
+    CreatorRegistrationSerializer, CreatorLoginSerializer, CreatorProfileSerializer,
+    CreatorInquirySerializer, CreatorInquiryStatusUpdateSerializer
 )
 from youtubers.models import Youtubers
-from webpages.models import Team, Slider, Contact, YouTuberInquiry
+from webpages.models import Team, Slider, YouTuberInquiry
 from contactinfo.models import Contactinfo
 from contactpage.models import Contactpage
 
@@ -32,11 +36,12 @@ def register(request):
     serializer = UserRegistrationSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
-        refresh = RefreshToken.for_user(user)
+        # Create authentication token
+        token, created = Token.objects.get_or_create(user=user)
         return Response({
             'user': UserSerializer(user).data,
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
+            'refresh': str(token),
+            'access': str(token.key),
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -51,11 +56,12 @@ def login(request):
     if username and password:
         user = authenticate(username=username, password=password)
         if user:
-            refresh = RefreshToken.for_user(user)
+            auth_login(request, user)
+            token, created = Token.objects.get_or_create(user=user)
             return Response({
                 'user': UserSerializer(user).data,
-                'refresh': str(refresh),
-                'access': str(refresh.access_token),
+                'refresh': str(token),
+                'access': str(token.key),
             })
         return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
     return Response({'error': 'Username and password required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -174,13 +180,6 @@ class SliderListView(generics.ListAPIView):
 
 
 # Contact Views
-class ContactCreateView(generics.CreateAPIView):
-    """Create contact form submission"""
-    queryset = Contact.objects.all()
-    serializer_class = ContactSerializer
-    permission_classes = [AllowAny]
-
-
 class ContactpageCreateView(generics.CreateAPIView):
     """Create contact page form submission"""
     queryset = Contactpage.objects.all()
@@ -365,6 +364,249 @@ class YouTuberInquiryCreateView(generics.CreateAPIView):
                 logger.error(f"Failed to send YouTuber inquiry email directly: {str(email_error)}")
                 # Don't fail the request if email fails
                 pass
+
+
+# ==================== CREATOR AUTHENTICATION VIEWS ====================
+
+class CreatorRegistrationView(generics.CreateAPIView):
+    """Creator registration endpoint"""
+    serializer_class = CreatorRegistrationSerializer
+    permission_classes = [AllowAny]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        
+        # Create authentication token
+        token, created = Token.objects.get_or_create(user=user)
+        
+        # Get creator profile
+        creator_profile = user.youtuber_profile
+        profile_serializer = CreatorProfileSerializer(creator_profile)
+        
+        return Response({
+            'message': 'Creator account created successfully',
+            'token': token.key,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            },
+            'creator_profile': profile_serializer.data
+        }, status=status.HTTP_201_CREATED)
+
+
+class CreatorLoginView(generics.GenericAPIView):
+    """Creator login endpoint"""
+    serializer_class = CreatorLoginSerializer
+    permission_classes = [AllowAny]
+    
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        user = serializer.validated_data['user']
+        
+        # Create or get authentication token
+        token, created = Token.objects.get_or_create(user=user)
+        
+        # Get creator profile
+        creator_profile = user.youtuber_profile
+        profile_serializer = CreatorProfileSerializer(creator_profile)
+        
+        return Response({
+            'message': 'Login successful',
+            'token': token.key,
+            'user': {
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+            },
+            'creator_profile': profile_serializer.data
+        }, status=status.HTTP_200_OK)
+
+
+class CreatorLogoutView(generics.GenericAPIView):
+    """Creator logout endpoint"""
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, *args, **kwargs):
+        try:
+            # Delete the user's token
+            token = Token.objects.get(user=request.user)
+            token.delete()
+            return Response({
+                'message': 'Successfully logged out'
+            }, status=status.HTTP_200_OK)
+        except Token.DoesNotExist:
+            return Response({
+                'message': 'You were not logged in'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+
+# ==================== CREATOR DASHBOARD VIEWS ====================
+
+class CreatorDashboardView(generics.RetrieveAPIView):
+    """Creator dashboard overview"""
+    permission_classes = [IsAuthenticated]
+    serializer_class = CreatorProfileSerializer
+    
+    def get_object(self):
+        try:
+            return self.request.user.youtuber_profile
+        except Youtubers.DoesNotExist:
+            return None
+    
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance is None:
+            return Response({
+                'error': 'No YouTuber profile associated with this account'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = self.get_serializer(instance)
+        
+        # Get recent inquiries
+        recent_inquiries = instance.inquiries.all()[:5]
+        inquiry_serializer = CreatorInquirySerializer(recent_inquiries, many=True)
+        
+        # Get status counts
+        status_counts = {
+            'pending': instance.inquiries.filter(status='pending').count(),
+            'contacted': instance.inquiries.filter(status='contacted').count(),
+            'in_discussion': instance.inquiries.filter(status='in_discussion').count(),
+            'accepted': instance.inquiries.filter(status='accepted').count(),
+            'declined': instance.inquiries.filter(status='declined').count(),
+            'completed': instance.inquiries.filter(status='completed').count(),
+        }
+        
+        return Response({
+            'creator_profile': serializer.data,
+            'recent_inquiries': inquiry_serializer.data,
+            'status_counts': status_counts,
+            'dashboard_stats': {
+                'total_inquiries': instance.total_inquiries_count,
+                'pending_inquiries': instance.pending_inquiries_count,
+                'success_rate': round((status_counts['accepted'] / max(instance.total_inquiries_count, 1)) * 100, 1)
+            }
+        })
+
+
+class CreatorInquiriesListView(generics.ListAPIView):
+    """List all inquiries for the logged-in creator"""
+    serializer_class = CreatorInquirySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        try:
+            creator_profile = self.request.user.youtuber_profile
+            queryset = creator_profile.inquiries.all()
+            
+            # Filter by status if provided
+            status_filter = self.request.query_params.get('status', None)
+            if status_filter:
+                queryset = queryset.filter(status=status_filter)
+            
+            # Search functionality
+            search = self.request.query_params.get('search', None)
+            if search:
+                queryset = queryset.filter(
+                    Q(first_name__icontains=search) |
+                    Q(last_name__icontains=search) |
+                    Q(email__icontains=search) |
+                    Q(company_name__icontains=search) |
+                    Q(subject__icontains=search) |
+                    Q(message__icontains=search)
+                )
+            
+            return queryset.order_by('-created_at')
+        except Youtubers.DoesNotExist:
+            return YouTuberInquiry.objects.none()
+
+
+class CreatorInquiryDetailView(generics.RetrieveUpdateAPIView):
+    """View and update a specific inquiry"""
+    serializer_class = CreatorInquirySerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        try:
+            creator_profile = self.request.user.youtuber_profile
+            return creator_profile.inquiries.all()
+        except Youtubers.DoesNotExist:
+            return YouTuberInquiry.objects.none()
+    
+    def get_serializer_class(self):
+        if self.request.method == 'PATCH' or self.request.method == 'PUT':
+            return CreatorInquiryStatusUpdateSerializer
+        return CreatorInquirySerializer
+
+
+class CreatorInquiryStatusUpdateView(generics.UpdateAPIView):
+    """Update inquiry status"""
+    serializer_class = CreatorInquiryStatusUpdateSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        try:
+            creator_profile = self.request.user.youtuber_profile
+            return creator_profile.inquiries.all()
+        except Youtubers.DoesNotExist:
+            return YouTuberInquiry.objects.none()
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        old_status = instance.status
+        self.perform_update(serializer)
+        new_status = serializer.instance.status
+        
+        # Log status change
+        logger.info(f"Creator {request.user.username} changed inquiry {instance.id} status from {old_status} to {new_status}")
+        
+        return Response({
+            'message': f'Inquiry status updated to {new_status}',
+            'inquiry': CreatorInquirySerializer(serializer.instance).data
+        })
+
+
+# ==================== CREATOR PROFILE VIEWS ====================
+
+class CreatorProfileUpdateView(generics.UpdateAPIView):
+    """Update creator profile"""
+    serializer_class = CreatorProfileSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_object(self):
+        try:
+            return self.request.user.youtuber_profile
+        except Youtubers.DoesNotExist:
+            return None
+    
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance is None:
+            return Response({
+                'error': 'No YouTuber profile associated with this account'
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        
+        return Response({
+            'message': 'Profile updated successfully',
+            'creator_profile': serializer.data
+        })
 
 
 # Stats and Data Views
